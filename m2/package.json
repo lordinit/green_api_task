@@ -4,7 +4,7 @@
   "description": "test_task",
   "main": "./lib/index.js",
   "scripts": {
-    "start": "tsc && node lib/index.js",
+    "start": "tsc && node lib/app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "lint": "tslint -c tslint.json src/**/*.ts",
