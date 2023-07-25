@@ -47,7 +47,6 @@ npm -v
 
 # Linux (Ubuntu/Debian):
 Откройте терминал и выполните следующие команды по порядку:
-Установка RabbitMQ
 sudo apt-get update
 sudo apt-get install -y rabbitmq-server
 
