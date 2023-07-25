@@ -30,7 +30,7 @@ URL_RABBITMQ=amqp://user:password@your-rabbitmq-server:5672
 URL_RABBITMQ=amqp://user:password@your-rabbitmq-server:5672
 Обратите внимание, что вместо your-rabbitmq-server, user и password необходимо указать соответствующие данные вашего RabbitMQ сервера.
 
-Для проверки работоспособности отправьте POST-запрос с телом в следующем формате:
+Для проверки работоспособности отправьте POST-запрос на адрес http://localhost:4390/process с телом в следующем формате:
 
 
 {
