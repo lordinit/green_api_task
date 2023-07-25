@@ -24,11 +24,11 @@ $ npm run start:both
 Пример содержимого файла .env:
 
 # Директория m1
-URL_RABBITMQ=amqp://user:password@your-rabbitmq-server:5672
+URL_RABBITMQ=amqp://localhost
 PORT=4390
 
 # Директория m2
-URL_RABBITMQ=amqp://user:password@your-rabbitmq-server:5672
+URL_RABBITMQ=amqp://localhost
 Обратите внимание, что вместо your-rabbitmq-server, user и password необходимо указать соответствующие данные вашего RabbitMQ сервера.
 
 # Проверка
