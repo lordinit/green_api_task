@@ -2,7 +2,11 @@ import amqp from 'amqplib';
 import { resultsMap, responseMap } from '../controllers/taskController';
 import logger from '../utils/logger';
 
-const rabbitMQURL = 'amqp://localhost';
+import dotenv from 'dotenv'
+
+dotenv.config()
+
+const rabbitMQURL = process.env.URL_RABBITMQ || 'amqp://localhost';
 export const taskQueueName = 'Принимаемая_здч';
 export const resultQueueName = 'Обработаная_здч';
 

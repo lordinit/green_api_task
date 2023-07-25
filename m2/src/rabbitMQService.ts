@@ -1,7 +1,10 @@
 import amqp from 'amqplib';
 import logger from './utils/logger';
+import dotenv from 'dotenv'
 
-const rabbitMQURL = 'amqp://localhost';
+dotenv.config()
+
+const rabbitMQURL = process.env.URL_RABBITMQ || 'amqp://localhost';
 
 export class RabbitMQService {
   async start(processTask: (task: any) => Promise<any>) {

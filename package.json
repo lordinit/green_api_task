@@ -1,0 +1,14 @@
+{
+  "name": "test_m1m2",
+  "version": "1.0.0",
+  "description": "Green API Task",
+  "main": "index.js",
+  "scripts": {
+    "start:m1": "cd m1 && npm start",
+    "start:m2": "cd m2 && npm start",
+    "start:both": "concurrently \"npm run start:m1\" \"npm run start:m2\"",
+    "preinstall": "cd m1 && npm install && cd ../m2 && npm install"
+  },
+  "author": "",
+  "license": "ISC"
+}
