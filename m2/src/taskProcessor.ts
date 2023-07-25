@@ -1,13 +1,7 @@
+import { TaskRequest } from './models/taskRequest';
 import { RabbitMQService } from './rabbitMQService';
 import logger from './utils/logger';
 
-interface TaskRequest {
-  task: string;
-  data: {
-    key: string;
-  };
-  messageId?: string;
-}
 
 export class M2Service {
   private rabbitMQService: RabbitMQService;
