@@ -23,13 +23,13 @@ $ npm run start:both
 В файле .env каждой директории (m1 и m2) укажите переменную окружения URL_RABBITMQ с URL вашего RabbitMQ сервера.
 Пример содержимого файла .env:
 
-# Директория m1
+# Директория m1 .env
 URL_RABBITMQ=amqp://localhost
 PORT=4390
 
-# Директория m2
+# Директория m2 .env
 URL_RABBITMQ=amqp://localhost
-Обратите внимание, что вместо your-rabbitmq-server, user и password необходимо указать соответствующие данные вашего RabbitMQ сервера.
+
 
 # Проверка
 
