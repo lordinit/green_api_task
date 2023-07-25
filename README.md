@@ -25,6 +25,7 @@ $ npm run start:both
 
 # Директория m1
 URL_RABBITMQ=amqp://user:password@your-rabbitmq-server:5672
+PORT=4390
 
 # Директория m2
 URL_RABBITMQ=amqp://user:password@your-rabbitmq-server:5672
