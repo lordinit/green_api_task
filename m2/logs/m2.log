@@ -1,0 +1,4 @@
+{"level":"info","message":"Сервис M2 запущен"}
+{"level":"info","message":"Получено задание из очереди:"}
+{"data":{"key":"value"},"level":"info","message":"Обрабатываемая задача","messageId":"c6b8929b-dcc1-4ff7-b588-e06ce1d9ce37","task":"do_something"}
+{"key":"value","level":"info","message":"Результат обработки:"}

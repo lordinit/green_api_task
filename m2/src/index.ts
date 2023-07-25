@@ -1,14 +1,24 @@
 import amqp from 'amqplib';
+import winston from 'winston';
 
 const rabbitMQURL = 'amqp://localhost';
 
+const logger = winston.createLogger({
+  level: 'info', // Уровень логирования (можно изменить по необходимости)
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: 'logs/m2.log' }), // Логи будут записываться в файл m2.log
+  ],
+});
+
 async function processTask(task: any) {
   // Вместо console.log() выполните фактическую обработку задания здесь
-  console.log('Обрабатываемая задача', task);
+  logger.info('Обрабатываемая задача', task);
 
   // Дополнительные операции обработки задачи
 
-  console.log('Результат обработки:', task.data);
+  logger.info('Результат обработки:', task.data);
 
   // Верните результат обработки задания
   return { result: 'Задача успешно обработана' };
@@ -16,6 +26,8 @@ async function processTask(task: any) {
 
 async function startM2() {
   try {
+    logger.info('Сервис M2 запущен');
+
     const connection = await amqp.connect(rabbitMQURL);
     const channel = await connection.createChannel();
     const queueName = 'post_queue'; // Имя очереди, из которой будут получаться задания
@@ -25,6 +37,8 @@ async function startM2() {
     // Обрабатываем задания из очереди
     channel.consume(queueName, async (msg) => {
       if (msg) {
+        logger.info('Получено задание из очереди:', msg.content.toString());
+
         const task = JSON.parse(msg.content.toString());
 
         // Обработка задания
@@ -42,7 +56,7 @@ async function startM2() {
       }
     });
   } catch (error) {
-    console.error('Ошибка при обработке задачи:', error);
+    logger.error('Ошибка при обработке задачи:', (error as Error).message);
   }
 }
 

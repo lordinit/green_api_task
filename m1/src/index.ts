@@ -1,6 +1,7 @@
 import express from 'express';
 import amqp from 'amqplib';
 import { v4 as uuidv4 } from 'uuid';
+import winston from 'winston';
 
 const app = express();
 const rabbitMQURL = 'amqp://localhost';
@@ -8,6 +9,15 @@ const taskQueueName = 'post_queue';
 const resultQueueName = 'exit_queue';
 
 const responseMap = new Map<string, express.Response>();
+
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.json(),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: 'logs/m1.log' }), // Логи будут записываться в файл m1.log
+  ],
+});
 
 // Создаем одно соединение и канал для RabbitMQ
 let connection: amqp.Connection;
@@ -34,7 +44,7 @@ async function setupRabbitMQ() {
       }
     });
   } catch (error) {
-    console.error('Ошибка при настройке RabbitMQ:', (error as Error).message);
+    logger.error('Ошибка при настройке RabbitMQ:', (error as Error).message);
   }
 }
 
@@ -45,7 +55,7 @@ app.use(express.json());
 
 app.post('/process', async (req, res) => {
   const requestData = req.body;
-  console.log('Получен HTTP POST запрос:', requestData);
+  logger.info('Получен HTTP POST запрос:', requestData);
 
   const messageId = uuidv4();
   responseMap.set(messageId, res);
@@ -74,7 +84,7 @@ app.post('/process', async (req, res) => {
 
 // Функция для обработки результата и отправки его клиенту
 function handleResult(res: express.Response, result: any) {
-  console.log('Получен результат от RabbitMQ:', result);
+  logger.info('Получен результат от RabbitMQ:', result);
   res.status(200).json(result);
 }
 
@@ -90,13 +100,13 @@ async function sendMessageToRabbitMQ(queueName: string, message: any) {
       persistent: true,
     });
 
-    console.log('Сообщение отправлено в RabbitMQ:', message);
+    logger.info('Сообщение отправлено в RabbitMQ:', message);
   } catch (error) {
-    console.error('Ошибка при отправке сообщения в RabbitMQ:',(error as Error).message);
+    logger.error('Ошибка при отправке сообщения в RabbitMQ:', (error as Error).message);
   }
 }
 
 const port = 3000;
 app.listen(port, () => {
-  console.log(`Сервер работает на порту:${port}`);
+  logger.info(`Сервер работает на порту:${port}`);
 });
