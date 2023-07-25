@@ -1,14 +1,23 @@
-import express from 'express';
+import express, { Request, Response } from 'express';
 import amqp from 'amqplib';
 import { v4 as uuidv4 } from 'uuid';
 import winston from 'winston';
 
+interface TaskRequest {
+  task: string;
+  data: {
+    key: string;
+  };
+  messageId?: string;
+}
+
 const app = express();
 const rabbitMQURL = 'amqp://localhost';
-const taskQueueName = 'post_queue';
-const resultQueueName = 'exit_queue';
+const taskQueueName = 'Принимаемая_здч';
+const resultQueueName = 'Обработаная_здч';
 
-const responseMap = new Map<string, express.Response>();
+const responseMap = new Map<string, Response>();
+const resultsMap = new Map<string, any>();
 
 const logger = winston.createLogger({
   level: 'info',
@@ -34,10 +43,10 @@ async function setupRabbitMQ() {
       if (msg) {
         const result = JSON.parse(msg.content.toString());
         const messageId = result.messageId;
+        resultsMap.set(messageId, result);
 
         const res = responseMap.get(messageId);
         if (res) {
-          handleResult(res, result);
           channel.ack(msg);
           responseMap.delete(messageId);
         }
@@ -49,44 +58,33 @@ async function setupRabbitMQ() {
 }
 
 // Инициализируем соединение с RabbitMQ
-setupRabbitMQ();
+setupRabbitMQ().catch((error) => {
+  logger.error('Ошибка при инициализации RabbitMQ:', (error as Error).message);
+});
 
 app.use(express.json());
 
-app.post('/process', async (req, res) => {
-  const requestData = req.body;
+app.post('/process', async (req: Request, res: Response) => {
+  const requestData: TaskRequest = req.body;
   logger.info('Получен HTTP POST запрос:', requestData);
 
   const messageId = uuidv4();
-  responseMap.set(messageId, res);
   requestData.messageId = messageId;
 
-  // Отправляем данные задания в очередь с заданиями
-  sendMessageToRabbitMQ(taskQueueName, requestData);
+  try {
+    // Отправляем данные задания в очередь с заданиями
+    await sendMessageToRabbitMQ(taskQueueName, requestData);
 
-  // Устанавливаем таймаут для ответа (можно настроить нужное значение)
-  const responseTimeout = 5000; // 5 секунд
-  setTimeout(() => {
-    const response = responseMap.get(messageId);
-    if (response) {
-      // Отправляем ответ с ошибкой, если обработка еще не завершена
-      const timeoutResult = { error: 'Таймаут обработки' };
-      if (!response.headersSent) { // Проверяем, что заголовки еще не отправлены
-        handleResult(response, timeoutResult);
-      }
-      responseMap.delete(messageId);
-    }
-  }, responseTimeout);
+    // Ожидаем завершения обработки задачи
+    const result = await waitForResult(messageId);
 
-  // Отправляем немедленный ответ клиенту
-  res.status(200).json({ message: 'Запрос получен и отправлен на обработку', messageId });
+    // Отправляем немедленный ответ клиенту
+    res.status(200).json({ message: 'Запрос получен и обработан', result });
+  } catch (error) {
+    logger.error('Ошибка при обработке запроса:', (error as Error).message);
+    res.status(500).json({ message: 'Произошла ошибка при обработке запроса' });
+  }
 });
-
-// Функция для обработки результата и отправки его клиенту
-function handleResult(res: express.Response, result: any) {
-  logger.info('Получен результат от RabbitMQ:', result);
-  res.status(200).json(result);
-}
 
 // Функция для отправки сообщения в RabbitMQ
 async function sendMessageToRabbitMQ(queueName: string, message: any) {
@@ -103,10 +101,36 @@ async function sendMessageToRabbitMQ(queueName: string, message: any) {
     logger.info('Сообщение отправлено в RabbitMQ:', message);
   } catch (error) {
     logger.error('Ошибка при отправке сообщения в RabbitMQ:', (error as Error).message);
+    throw error;
   }
 }
 
+// Функция для ожидания результата обработки задачи
+function waitForResult(messageId: string): Promise<any> {
+  return new Promise((resolve, reject) => {
+    // Ожидаем максимум 10 секунд, чтобы не заблокировать запрос навсегда в случае проблем с обработкой
+    const maxWaitTime = 10000; // 10 секунд
+    const pollInterval = 200; // Проверяем каждые 200 мс
+
+    const startTime = Date.now();
+
+    // Проверяем наличие результата каждые pollInterval мс
+    const intervalId = setInterval(() => {
+      const result = resultsMap.get(messageId);
+      if (result) {
+        clearInterval(intervalId);
+        resolve(result);
+      } else if (Date.now() - startTime > maxWaitTime) {
+        // Время ожидания истекло, возвращаем пустой результат
+        clearInterval(intervalId);
+        reject(new Error('Время ожидания истекло'));
+      }
+    }, pollInterval);
+  });
+}
+
+
 const port = 3000;
 app.listen(port, () => {
-  logger.info(`Сервер работает на порту:${port}`);
+  logger.info(`Сервис M1 запущен на порту :${port}`);
 });

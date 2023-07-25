@@ -3,6 +3,19 @@ import winston from 'winston';
 
 const rabbitMQURL = 'amqp://localhost';
 
+interface TaskRequest {
+  task: string;
+  data: {
+    key: string;
+  
+  };
+  messageId?:string
+}
+
+function reverseString(input: string): string {
+  return input.split('').reverse().join('');
+}
+
 const logger = winston.createLogger({
   level: 'info', // Уровень логирования (можно изменить по необходимости)
   format: winston.format.json(),
@@ -12,15 +25,19 @@ const logger = winston.createLogger({
   ],
 });
 
-async function processTask(task: any) {
+async function processTask(task: TaskRequest) {
   logger.info('Обрабатываемая задача', task);
 
   // Дополнительные операции обработки задачи
+  task.task = reverseString(task.task)
+  
 
-  logger.info('Результат обработки:', task.data);
+  //TODO тут уже можно прописывать логигку и обработку данных
+
+  logger.info('Результат обработки:', task.task);
 
   // Верните результат обработки задания
-  return { result: 'Задача успешно обработана' };
+  return  task ;
 }
 
 async function startM2() {
@@ -29,7 +46,7 @@ async function startM2() {
 
     const connection = await amqp.connect(rabbitMQURL);
     const channel = await connection.createChannel();
-    const queueName = 'post_queue'; // Имя очереди, из которой будут получаться задания
+    const queueName = 'Принимаемая_здч'; // Имя очереди, из которой будут получаться задания
 
     await channel.assertQueue(queueName, { durable: true });
 
@@ -44,7 +61,7 @@ async function startM2() {
         const result = await processTask(task);
 
         // Отправляем результат обработки в другую очередь
-        const resultQueueName = 'exit_queue';
+        const resultQueueName = 'Обработаная_здч';
         await channel.assertQueue(resultQueueName, { durable: true });
         channel.sendToQueue(resultQueueName, Buffer.from(JSON.stringify(result)), {
           persistent: true,
