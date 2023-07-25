@@ -1,6 +1,0 @@
-{"level":"info","message":"Сервер работает на порту:3000"}
-{"data":{"key":"value"},"level":"info","message":"Получен HTTP POST запрос:","task":"do_something"}
-{"data":{"key":"value"},"level":"info","message":"Сообщение отправлено в RabbitMQ:","messageId":"5704ab87-6ff8-4c32-9579-034ebae89b08","task":"do_something"}
-{"level":"info","message":"Сервер работает на порту:3000"}
-{"data":{"key":"value"},"level":"info","message":"Получен HTTP POST запрос:","task":"do_something"}
-{"data":{"key":"value"},"level":"info","message":"Сообщение отправлено в RabbitMQ:","messageId":"c6b8929b-dcc1-4ff7-b588-e06ce1d9ce37","task":"do_something"}

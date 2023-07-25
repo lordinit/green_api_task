@@ -8,12 +8,11 @@ const logger = winston.createLogger({
   format: winston.format.json(),
   transports: [
     new winston.transports.Console(),
-    new winston.transports.File({ filename: 'logs/m2.log' }), // Логи будут записываться в файл m2.log
+    new winston.transports.File({ filename: '../logs/m2.log' }), // Логи будут записываться в файл m2.log
   ],
 });
 
 async function processTask(task: any) {
-  // Вместо console.log() выполните фактическую обработку задания здесь
   logger.info('Обрабатываемая задача', task);
 
   // Дополнительные операции обработки задачи
